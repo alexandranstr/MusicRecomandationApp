@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MusicRecApp.Data;
 using MusicRecApp.Model;
 
 namespace MusicRecApp.Controllers
@@ -8,16 +9,25 @@ namespace MusicRecApp.Controllers
     [ApiController]
     public class MusicController : ControllerBase
     {
-        [HttpGet("test-songs")]
-        public IActionResult GetSongs()
-        {
-            var songs = new List<Song>
-            {
-                new Song { Id = 1, Title = "Blinding Lights", Artist = "The Weeknd", Genre = "Pop", Tempo = 171, Energy = 0.8 },
-                new Song { Id = 2, Title = "Stairway to Heaven", Artist = "Led Zeppelin", Genre = "Rock", Tempo = 82, Energy = 0.5 }
-            };
+        private readonly AppDbContext _context;
 
-            return Ok(songs);
+        public MusicController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Song>>> GetSongs()
+        {
+            return await _context.Songs.ToListAsync();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Song>> PostSong(Song song)
+        {
+            _context.Songs.Add(song);
+            await _context.SaveChangesAsync();
+            return Ok(song);
         }
     }
 }
