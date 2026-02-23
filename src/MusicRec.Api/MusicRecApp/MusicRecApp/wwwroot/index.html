@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Music Recommender - YouTube Edition</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .container {
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 450px;
+            text-align: center;
+        }
+
+        input {
+            width: 80%;
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 15px;
+            background: #333;
+            color: white;
+            outline: none;
+        }
+
+        button {
+            background: #ff0000; 
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+            button:hover {
+                background: #cc0000;
+                transform: scale(1.05);
+            }
+
+        .song-card {
+            background: #282828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            border-left: 5px solid #ff0000;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #favoritesSection {
+            margin-top: 30px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .fav-item {
+            background: #282828;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+            .fav-item:hover {
+                border-color: #ff0000;
+            }
+
+        .empty-msg {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authContainer" class="container">
+        <h1>🔐 Welcome</h1>
+        <p>Login to start your YouTube Music journey</p>
+        <input type="text" id="usernameIn" placeholder="Username">
+        <input type="password" id="passwordIn" placeholder="Password">
+        <div style="margin-top: 10px;">
+            <button onclick="handleAuth('login')">Login</button>
+            <button onclick="handleAuth('register')" style="background: #444;">Register</button>
+        </div>
+    </div>
+
+    <div id="mainApp" class="container" style="display: none;">
+        <h1>🎵 Hello, <span id="userDisplayName" style="color: #ff0000;"></span>!</h1>
+
+        <div style="margin-bottom: 20px; position: relative;">
+            <input type="text" id="songInput" placeholder="Search song or artist on YouTube...">
+            <button onclick="searchYouTube()">Search YouTube</button>
+        </div>
+
+        <div id="youtubeResult"></div>
+
+        <div id="favoritesSection">
+            <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px;">⭐ My Favorites</h3>
+            <div id="favList">
+                <p class="empty-msg">No favorites added yet.</p>
+            </div>
+        </div>
+
+        <button onclick="logout()" style="background: transparent; color: #888; margin-top: 20px; font-size: 0.8em;">Logout</button>
+    </div>
+
+    <script>
+        let currentUserId = null;
+
+        window.onload = function () {
+            const savedId = localStorage.getItem('savedUserId');
+            const savedName = localStorage.getItem('savedUserName');
+
+            if (savedId && savedName) {
+                currentUserId = savedId;
+                document.getElementById('userDisplayName').innerText = savedName;
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadFavorites();
+            }
+        };
+
+        async function handleAuth(type) {
+            const u = document.getElementById('usernameIn').value;
+            const p = document.getElementById('passwordIn').value;
+            if (!u || !p) return alert("Please fill in all fields");
+
+            const response = await fetch(`/api/Auth/${type}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+
+            if (response.ok) {
+                if (type === 'register') {
+                    alert("Account created! You can now login.");
+                } else {
+                    const data = await response.json();
+                    console.log("Date primite la login:", data); 
+
+                    const id = data.userId || data.UserId || data.id || data.Id;
+                    const name = data.username || data.Username;
+
+                    if (id) {
+                        currentUserId = id;
+                        localStorage.setItem('savedUserId', id);
+                        localStorage.setItem('savedUserName', name);
+
+                        document.getElementById('userDisplayName').innerText = name;
+                        document.getElementById('authContainer').style.display = 'none';
+                        document.getElementById('mainApp').style.display = 'block';
+                        loadFavorites();
+                    } else {
+                        console.error("Serverul nu a trimis un ID valid. Obiect primit:", data);
+                        alert("Eroare la logare: Serverul nu a trimis ID-ul utilizatorului.");
+                    }
+                }
+            } else {
+                alert("Authentication failed! Please try again.");
+            }
+        }
+
+        async function searchYouTube() {
+            const query = document.getElementById('songInput').value;
+            const resultDiv = document.getElementById('youtubeResult');
+
+            if (!query.trim()) return;
+
+            resultDiv.innerHTML = "<p style='color: #888;'>Searching YouTube...</p>";
+
+            try {
+                const response = await fetch(`/api/YouTube/search?query=${encodeURIComponent(query)}`);
+                if (response.ok) {
+                    const track = await response.json();
+                    resultDiv.innerHTML = `
+                                <div class="song-card">
+                                    <img src="${track.thumbnail}" width="100%" style="border-radius: 5px; margin-bottom: 10px; max-height: 200px; object-fit: cover;">
+                                    <h4 style="margin: 5px 0;">${track.title}</h4>
+                                    <p style="color: #b3b3b3; margin-bottom: 15px;">${track.artist}</p>
+                                    <button onclick="addToFav('${track.youTubeId}', '${track.title.replace(/'/g, "\\'")}', '${track.artist.replace(/'/g, "\\'")}')">❤️ Add to Favorites</button>
+                                </div>
+                            `;
+                } else {
+                    resultDiv.innerHTML = "<p style='color: #ff4444;'>No results found on YouTube.</p>";
+                }
+            } catch (err) {
+                resultDiv.innerHTML = "<p style='color: #ff4444;'>Error connecting to YouTube service.</p>";
+            }
+        }
+
+        async function addToFav(id, title, artist) {
+           
+            const userIdInt = parseInt(currentUserId);
+
+            if (isNaN(userIdInt)) {
+                alert("Eroare: Sesiunea utilizatorului este invalidă. Te rugăm să te loghezi din nou.");
+                return;
+            }
+
+            const fav = {
+                UserId: userIdInt,
+                YoutubeId: id,
+                Title: title,
+                Artist: artist
+            };
+
+            try {
+                const response = await fetch('/api/Favorites/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fav)
+                });
+
+                if (response.ok) {
+                    alert("✅ Piesa '" + title + "' a fost salvată!");
+                    loadFavorites();
+                } else {
+                    const errorData = await response.json();
+                    console.error("Server Error:", errorData);
+                    alert("❌ Eroare la server. Verifică consola (F12/Ctrl+Shift+I).");
+                }
+            } catch (err) {
+                alert("❌ Nu am putut contacta serverul.");
+            }
+        }
+
+        async function loadFavorites() {
+            const savedId = localStorage.getItem('savedUserId');
+            if (!savedId) return;
+
+            try {
+                const response = await fetch(`/api/Favorites/${parseInt(savedId)}`);
+                const list = document.getElementById('favList');
+
+                if (response.ok) {
+                    const favs = await response.json();
+
+                    if (!favs || favs.length === 0) {
+                        list.innerHTML = '<p class="empty-msg">No favorites added yet.</p>';
+                        return;
+                    }
+
+                    list.innerHTML = favs.map(f => {
+                        const songTitle = f.Title || f.title || "Unknown Title";
+                        const songArtist = f.Artist || f.artist || "Unknown Artist";
+
+                        return `
+                    <div class="fav-item">
+                        <span><strong>${songTitle}</strong> - ${songArtist}</span>
+                        <span style="color: #ff0000;">✓</span>
+                    </div>
+                `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error("Eroare la încărcarea listei:", err);
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+    </script>
+</body>
+</html>

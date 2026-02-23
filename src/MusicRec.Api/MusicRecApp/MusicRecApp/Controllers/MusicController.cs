@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MusicRecApp.Data;
 using MusicRecApp.Model;
 
 namespace MusicRecApp.Controllers
