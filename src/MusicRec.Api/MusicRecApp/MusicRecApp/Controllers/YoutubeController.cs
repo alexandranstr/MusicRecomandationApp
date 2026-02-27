@@ -7,9 +7,9 @@ namespace MusicRecApp.Controllers
     [ApiController]
     public class YouTubeController : ControllerBase
     {
-        private readonly YouTubeService _youtubeService;
+        private readonly YouTubeMusicService _youtubeService;
 
-        public YouTubeController(YouTubeService youtubeService)
+        public YouTubeController(YouTubeMusicService youtubeService)
         {
             _youtubeService = youtubeService;
         }
@@ -17,7 +17,7 @@ namespace MusicRecApp.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search(string query)
         {
-            var result = await _youtubeService.SearchTrack(query);
+            var result = await _youtubeService.SearchSingleVideoAsync(query);
             if (result == null) return NotFound("No results found");
             return Ok(result);
         }

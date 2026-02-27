@@ -3,296 +3,540 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Music Recommender - YouTube Edition</title>
+    <title>Music AI - Cosmic Purple</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #121212;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 50px;
+        :root {
+            --bg-black: #030008;
+            --neon-purple: #9d00ff;
+            --deep-violet: #4b0082;
+            --magenta-glow: #ff00ff;
+            --soft-purple: #f0abff;
         }
 
-        .container {
-            background: #1e1e1e;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-black);
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #0a001a 0%, #030008 100%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(35px);
+            opacity: 0.4;
+            animation: float-random infinite ease-in-out;
+            box-shadow: 0 0 80px rgba(157, 0, 255, 0.2);
+        }
+
+        .orb-1 {
+            width: 350px;
+            height: 350px;
+            background: var(--neon-purple);
+            top: -5%;
+            left: -5%;
+            animation-duration: 22s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--deep-violet);
+            bottom: -10%;
+            right: -5%;
+            animation-duration: 28s;
+            animation-delay: -2s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--magenta-glow);
+            top: 20%;
+            right: 15%;
+            animation-duration: 25s;
+            animation-delay: -5s;
+            opacity: 0.3;
+        }
+
+        .orb-4 {
             width: 450px;
+            height: 450px;
+            background: var(--deep-violet);
+            top: 60%;
+            left: 10%;
+            animation-duration: 30s;
+            animation-delay: -7s;
+        }
+
+        .orb-5 {
+            width: 250px;
+            height: 250px;
+            background: var(--neon-purple);
+            top: 50%;
+            left: 40%;
+            animation-duration: 20s;
+            animation-delay: -3s;
+            opacity: 0.2;
+        }
+
+        .orb-6 {
+            width: 380px;
+            height: 380px;
+            background: var(--magenta-glow);
+            bottom: 10%;
+            left: 30%;
+            animation-duration: 35s;
+            animation-delay: -10s;
+        }
+
+        .orb-7 {
+            width: 200px;
+            height: 200px;
+            background: var(--soft-purple);
+            top: 40%;
+            right: 5%;
+            animation-duration: 18s;
+            animation-delay: -4s;
+            opacity: 0.2;
+        }
+
+        @keyframes float-random {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(120px, -80px) scale(1.2) rotate(10deg);
+            }
+
+            66% {
+                transform: translate(-100px, 150px) scale(0.8) rotate(-10deg);
+            }
+        }
+
+        .glass-panel {
+            background: rgba(10, 2, 20, 0.85);
+            backdrop-filter: blur(25px);
+            border-radius: 30px;
+            border: 1px solid rgba(157, 0, 255, 0.3);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #authContainer {
+            width: 380px;
+            padding: 40px;
             text-align: center;
         }
 
-        input {
-            width: 80%;
-            padding: 12px;
-            border-radius: 5px;
-            border: none;
-            margin-bottom: 15px;
-            background: #333;
-            color: white;
-            outline: none;
+        #mainApp {
+            display: none;
+            opacity: 0;
+            width: 95vw;
+            max-width: 1100px;
+            height: 85vh;
+            padding: 25px;
+            flex-direction: column;
+            transition: opacity 0.5s;
         }
 
-        button {
-            background: #ff0000; 
-            color: white;
-            border: none;
-            padding: 10px 20px;
+        .app-layout {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
+            border: 1px solid rgba(157, 0, 255, 0.15);
+            padding: 20px;
+            overflow-y: auto;
         }
 
-            button:hover {
-                background: #cc0000;
-                transform: scale(1.05);
-            }
+        .left-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-search-result, .panel-recommendations {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            flex: 1;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin: 0;
+            background: linear-gradient(135deg, var(--soft-purple), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
         .song-card {
-            background: #282828;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
             padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: left;
-            border-left: 5px solid #ff0000;
-            animation: fadeIn 0.5s;
+            border: 1px solid rgba(157, 0, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .song-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        #favoritesSection {
-            margin-top: 30px;
+        .song-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .song-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .song-title {
+            font-weight: 600;
+            font-size: 1em;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
+        .song-artist {
+            color: var(--soft-purple);
+            font-size: 0.85em;
+        }
+
+        .btn-add-fav {
             width: 100%;
-            text-align: left;
+            background: rgba(157, 0, 255, 0.15);
+            border: 1px solid var(--neon-purple);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 0.75em;
         }
+
+            .btn-add-fav:hover {
+                background: var(--neon-purple);
+                box-shadow: 0 0 10px var(--neon-purple);
+            }
 
         .fav-item {
-            background: #282828;
             padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-size: 0.9em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid transparent;
-            transition: 0.2s;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(157,0,255,0.1);
+            cursor: pointer;
         }
 
             .fav-item:hover {
-                border-color: #ff0000;
+                background: rgba(157, 0, 255, 0.1);
             }
 
-        .empty-msg {
-            color: #666;
-            font-style: italic;
-            text-align: center;
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #111;
+            color: white;
+        }
+
+        .btn-search {
+            width: 100px;
+            background: var(--neon-purple);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        h3 {
+            color: var(--soft-purple);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            margin-top: 0;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
-    <div id="authContainer" class="container">
-        <h1>🔐 Welcome</h1>
-        <p>Login to start your YouTube Music journey</p>
-        <input type="text" id="usernameIn" placeholder="Username">
-        <input type="password" id="passwordIn" placeholder="Password">
-        <div style="margin-top: 10px;">
-            <button onclick="handleAuth('login')">Login</button>
-            <button onclick="handleAuth('register')" style="background: #444;">Register</button>
-        </div>
+    <div class="background-container">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+        <div class="orb orb-6"></div>
+        <div class="orb orb-7"></div>
     </div>
 
-    <div id="mainApp" class="container" style="display: none;">
-        <h1>🎵 Hello, <span id="userDisplayName" style="color: #ff0000;"></span>!</h1>
+    <div id="authContainer" class="glass-panel">
+        <h1 style="margin-bottom: 40px; letter-spacing: 2px;">Music Discoverer</h1>
+        <input type="text" id="usernameIn" placeholder="Username" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;">
+        <input type="password" id="passwordIn" placeholder="Password" style="width: 100%; box-sizing: border-box; margin-bottom: 20px;">
+        <button onclick="processAuth()" style="width:100%; padding: 12px; border-radius: 10px; border:none; background: var(--neon-purple); color:white; font-weight:bold; cursor:pointer;">Sign In</button>
+        <button onclick="toggleMode()" style="background:none; border:none; color:#666; margin-top:15px; cursor:pointer;">Register Account</button>
+        <div id="authMessage" style="margin-top: 20px; padding: 10px; border-radius: 8px; display: none; font-size: 0.85em; background: rgba(157, 0, 255, 0.1); border: 1px solid var(--neon-purple); color: var(--soft-purple);"></div>
+    </div>
 
-        <div style="margin-bottom: 20px; position: relative;">
-            <input type="text" id="songInput" placeholder="Search song or artist on YouTube...">
-            <button onclick="searchYouTube()">Search YouTube</button>
+    <div id="mainApp" class="glass-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>Discover <span style="font-size: 0.5em; color: var(--soft-purple)">Music</span></h1>
+            <button onclick="logout()" style="background:rgba(255,255,255,0.05); color:white; border:1px solid #444; padding:5px 15px; border-radius:8px; cursor:pointer;">Logout</button>
         </div>
 
-        <div id="youtubeResult"></div>
+        <div class="search-box" style="margin-top: 20px;">
+            <input type="text" id="searchInput" placeholder="Search for a track...">
+            <button class="btn-search" onclick="searchMusic()">Search</button>
+        </div>
 
-        <div id="favoritesSection">
-            <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px;">⭐ My Favorites</h3>
-            <div id="favList">
-                <p class="empty-msg">No favorites added yet.</p>
+        <div class="app-layout">
+            <div class="left-panel">
+                <div class="panel panel-search-result">
+                    <h3>Currently Selected</h3>
+                    <div id="selectedResult"></div>
+                </div>
+                <div class="panel panel-recommendations">
+                    <h3>Recommendations</h3>
+                    <div id="recommendationsList"></div>
+                </div>
+            </div>
+            <div class="panel right-panel">
+                <h3>My Favorites</h3>
+                <div id="favoritesList"></div>
             </div>
         </div>
-
-        <button onclick="logout()" style="background: transparent; color: #888; margin-top: 20px; font-size: 0.8em;">Logout</button>
     </div>
 
     <script>
-        let currentUserId = null;
+        let isRegisterMode = false;
 
-        window.onload = function () {
-            const savedId = localStorage.getItem('savedUserId');
-            const savedName = localStorage.getItem('savedUserName');
+        function toggleMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('authMessage').style.display = 'none'; 
 
-            if (savedId && savedName) {
-                currentUserId = savedId;
-                document.getElementById('userDisplayName').innerText = savedName;
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadFavorites();
+            const authBtn = document.querySelector('#authContainer button:not([onclick^="toggle"])');
+            const toggleBtn = document.querySelector('#authContainer button[onclick^="toggle"]');
+            const title = document.querySelector('#authContainer h1');
+
+            if (isRegisterMode) {
+                title.innerText = "Register account";
+                authBtn.innerText = "Create";
+                toggleBtn.innerText = "Return to Login";
+            } else {
+                title.innerText = "Music Discoverer";
+                authBtn.innerText = "Sign In";
+                toggleBtn.innerText = "Register Account";
             }
-        };
+        }
 
-        async function handleAuth(type) {
+        function logout() { localStorage.clear(); location.reload(); }
+
+        function showMessage(text, isError = true) {
+            const msgDiv = document.getElementById('authMessage');
+            msgDiv.innerText = text;
+            msgDiv.style.display = 'block';
+
+            msgDiv.style.borderColor = isError ? 'var(--neon-purple)' : '#00ffcc';
+            msgDiv.style.color = isError ? 'var(--soft-purple)' : '#00ffcc';
+
+            setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
+        }
+
+        async function processAuth() {
             const u = document.getElementById('usernameIn').value;
             const p = document.getElementById('passwordIn').value;
-            if (!u || !p) return alert("Please fill in all fields");
+            const msgDiv = document.getElementById('authMessage');
 
-            const response = await fetch(`/api/Auth/${type}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: u, password: p })
-            });
-
-            if (response.ok) {
-                if (type === 'register') {
-                    alert("Account created! You can now login.");
-                } else {
-                    const data = await response.json();
-                    console.log("Date primite la login:", data); 
-
-                    const id = data.userId || data.UserId || data.id || data.Id;
-                    const name = data.username || data.Username;
-
-                    if (id) {
-                        currentUserId = id;
-                        localStorage.setItem('savedUserId', id);
-                        localStorage.setItem('savedUserName', name);
-
-                        document.getElementById('userDisplayName').innerText = name;
-                        document.getElementById('authContainer').style.display = 'none';
-                        document.getElementById('mainApp').style.display = 'block';
-                        loadFavorites();
-                    } else {
-                        console.error("Serverul nu a trimis un ID valid. Obiect primit:", data);
-                        alert("Eroare la logare: Serverul nu a trimis ID-ul utilizatorului.");
-                    }
-                }
-            } else {
-                alert("Authentication failed! Please try again.");
-            }
-        }
-
-        async function searchYouTube() {
-            const query = document.getElementById('songInput').value;
-            const resultDiv = document.getElementById('youtubeResult');
-
-            if (!query.trim()) return;
-
-            resultDiv.innerHTML = "<p style='color: #888;'>Searching YouTube...</p>";
-
-            try {
-                const response = await fetch(`/api/YouTube/search?query=${encodeURIComponent(query)}`);
-                if (response.ok) {
-                    const track = await response.json();
-                    resultDiv.innerHTML = `
-                                <div class="song-card">
-                                    <img src="${track.thumbnail}" width="100%" style="border-radius: 5px; margin-bottom: 10px; max-height: 200px; object-fit: cover;">
-                                    <h4 style="margin: 5px 0;">${track.title}</h4>
-                                    <p style="color: #b3b3b3; margin-bottom: 15px;">${track.artist}</p>
-                                    <button onclick="addToFav('${track.youTubeId}', '${track.title.replace(/'/g, "\\'")}', '${track.artist.replace(/'/g, "\\'")}')">❤️ Add to Favorites</button>
-                                </div>
-                            `;
-                } else {
-                    resultDiv.innerHTML = "<p style='color: #ff4444;'>No results found on YouTube.</p>";
-                }
-            } catch (err) {
-                resultDiv.innerHTML = "<p style='color: #ff4444;'>Error connecting to YouTube service.</p>";
-            }
-        }
-
-        async function addToFav(id, title, artist) {
-           
-            const userIdInt = parseInt(currentUserId);
-
-            if (isNaN(userIdInt)) {
-                alert("Eroare: Sesiunea utilizatorului este invalidă. Te rugăm să te loghezi din nou.");
+            if (!u || !p) {
+                showMessage("Please fill in all the fields.");
                 return;
             }
 
-            const fav = {
-                UserId: userIdInt,
-                YoutubeId: id,
-                Title: title,
-                Artist: artist
-            };
+            if (isRegisterMode && p.length < 6) {
+                showMessage("Password too short (min 6 chars).");
+                return;
+            }
+
+            const endpoint = isRegisterMode ? '/api/Auth/register' : '/api/Auth/login';
 
             try {
-                const response = await fetch('/api/Favorites/add', {
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(fav)
+                    body: JSON.stringify({ Username: u, Password: p })
                 });
 
-                if (response.ok) {
-                    alert("✅ Piesa '" + title + "' a fost salvată!");
-                    loadFavorites();
+                if (res.ok) {
+                    const data = await res.json();
+                    if (isRegisterMode) {
+                        showMessage("Account created! You can now Sign In.", false);
+                        toggleMode();
+                    } else {
+                        localStorage.setItem('userId', data.userId || 1);
+                        localStorage.setItem('isLoggedIn', 'true');
+                        showApp();
+                    }
                 } else {
-                    const errorData = await response.json();
-                    console.error("Server Error:", errorData);
-                    alert("❌ Eroare la server. Verifică consola (F12/Ctrl+Shift+I).");
+                    const errorData = await res.text();
+                    showMessage(isRegisterMode ? "Identity exists or invalid data." : "Access denied: Invalid credentials.");
                 }
-            } catch (err) {
-                alert("❌ Nu am putut contacta serverul.");
+            } catch (e) {
+                showMessage("Connection lost. Check server.");
             }
+        }
+
+        function showApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            const app = document.getElementById('mainApp');
+            app.style.display = 'flex';
+            setTimeout(() => app.style.opacity = '1', 50);
+            loadFavorites();
+        }
+
+        async function searchMusic() {
+            const q = document.getElementById('searchInput').value;
+            if (!q.trim()) return;
+            const resDiv = document.getElementById('selectedResult');
+            resDiv.innerHTML = "Searching...";
+            try {
+                const res = await fetch(`/api/YouTube/search?query=${encodeURIComponent(q)}`);
+                if (res.ok) {
+                    const track = await res.json();
+                    resDiv.innerHTML = `
+                            <div class="song-card">
+                                <div class="song-header">
+                                    <img src="${track.thumbnail}" class="song-img">
+                                    <div class="song-info">
+                                        <div class="song-title">${track.title}</div>
+                                        <div class="song-artist">${track.artist}</div>
+                                    </div>
+                                </div>
+                                <button class="btn-add-fav" onclick="addToFav('${track.youTubeId}', '${track.title.replace(/'/g, "\\'")}', '${track.artist.replace(/'/g, "\\'")}')">
+                                    + Add Favorite
+                                </button>
+                            </div>`;
+                }
+            } catch (e) { resDiv.innerHTML = "Error"; }
+        }
+
+        async function addToFav(yid, title, artist) {
+            const uid = localStorage.getItem('userId');
+            const res = await fetch('/api/Favorites/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ UserId: parseInt(uid), YoutubeId: yid, Title: title, Artist: artist })
+            });
+            if (res.ok) loadFavorites();
         }
 
         async function loadFavorites() {
-            const savedId = localStorage.getItem('savedUserId');
-            if (!savedId) return;
-
-            try {
-                const response = await fetch(`/api/Favorites/${parseInt(savedId)}`);
-                const list = document.getElementById('favList');
-
-                if (response.ok) {
-                    const favs = await response.json();
-
-                    if (!favs || favs.length === 0) {
-                        list.innerHTML = '<p class="empty-msg">No favorites added yet.</p>';
-                        return;
-                    }
-
-                    list.innerHTML = favs.map(f => {
-                        const songTitle = f.Title || f.title || "Unknown Title";
-                        const songArtist = f.Artist || f.artist || "Unknown Artist";
-
-                        return `
-                    <div class="fav-item">
-                        <span><strong>${songTitle}</strong> - ${songArtist}</span>
-                        <span style="color: #ff0000;">✓</span>
-                    </div>
-                `;
-                    }).join('');
-                }
-            } catch (err) {
-                console.error("Eroare la încărcarea listei:", err);
+            const uid = localStorage.getItem('userId');
+            const res = await fetch(`/api/Favorites/${uid}`);
+            if (res.ok) {
+                const favs = await res.json();
+                const list = document.getElementById('favoritesList');
+                list.innerHTML = "";
+                favs.reverse().forEach(f => {
+                    list.innerHTML += `
+                            <div class="fav-item" onclick="getRecommendations('${f.title.replace(/'/g, "\\'")}')">
+                                <div style="font-weight:bold;">${f.title}</div>
+                                <div style="font-size:0.8em; color:var(--soft-purple);">${f.artist}</div>
+                            </div>`;
+                });
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
+        async function getRecommendations(title) {
+            const recList = document.getElementById('recommendationsList');
+            recList.innerHTML = "Searching for recommendation...";
+
+            try {
+                const res = await fetch(`/api/Recommendation/get-discovery/${encodeURIComponent(title)}`);
+                if (res.ok) {
+                    const data = await res.json();
+
+                    recList.innerHTML = "";
+                    if (data.length === 0) {
+                        recList.innerHTML = "<p style='font-size:0.8em; opacity:0.6;'>No matches found in the stars.</p>";
+                        return;
+                    }
+
+                    data.forEach(s => {
+                        recList.innerHTML += `
+                    <div class="song-card" style="margin-bottom:12px; border-style: solid; border-color: rgba(157, 0, 255, 0.4);">
+                        <div class="song-header">
+                            <img src="${s.thumbnail || 'https://via.placeholder.com/60'}" class="song-img">
+                            <div class="song-info">
+                                <div class="song-title">${s.title}</div>
+                                <div class="song-artist">${s.artist}</div>
+                            </div>
+                        </div>
+                        <button class="btn-add-fav" onclick="window.open('https://www.youtube.com/watch?v=${s.youTubeId}', '_blank')">
+                            ▶ Play on YouTube
+                        </button>
+                    </div>`;
+                    });
+                } else {
+                    recList.innerHTML = "Error";
+                }
+            } catch (e) {
+                console.error(e);
+                recList.innerHTML = "Connection lost.";
+            }
         }
+
+        window.onload = () => { if (localStorage.getItem('isLoggedIn') === 'true') showApp(); }
     </script>
 </body>
 </html>

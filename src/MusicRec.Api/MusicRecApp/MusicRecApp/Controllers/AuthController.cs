@@ -11,9 +11,17 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register([FromBody] User user)
     {
+        var exists = _context.Users.Any(u => u.Username == user.Username);
+
+        if (exists)
+        {
+            return Conflict(new { message = "User already exists!" });
+        }
+
         _context.Users.Add(user);
         _context.SaveChanges();
-        return Ok("User created!");
+
+        return Ok(new { message = "User created!", userId = user.Id });
     }
 
     [HttpPost("login")]
